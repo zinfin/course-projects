@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.example.sandie.weatherapp.R;
+import com.example.weatherapp.R;
 import com.example.weatherapp.operation.WeatherOps;
 import com.example.weatherapp.operation.WeatherOpsImpl;
 import com.example.weatherapp.util.RetainedFragmentManager;
@@ -65,11 +65,13 @@ public class MainActivity extends LoggingActivity {
         // stopping.
         super.onStop();
     }
-    public void doSync(View v){
+    public void doSync(View v)
+    {
         mWeatherOps.doSync(v);
     }
 
     public void doAsync(View v){
+
         mWeatherOps.doAsync(v);
     }
     /**

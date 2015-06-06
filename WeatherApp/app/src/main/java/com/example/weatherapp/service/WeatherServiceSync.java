@@ -13,9 +13,7 @@ import com.example.weatherapp.util.WeatherUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sandie on 5/28/15.
- */
+
 public class WeatherServiceSync extends LoggingService {
 
     /**

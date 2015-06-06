@@ -24,9 +24,7 @@ import java.util.Map;
 import vandy.mooc.jsonweather.JsonWeather;
 import vandy.mooc.jsonweather.WeatherJSONParser;
 
-/**
- * Created by sandie on 5/28/15.
- */
+
 public class WeatherUtil {
     /**
      * Logging tag used by the debugger.

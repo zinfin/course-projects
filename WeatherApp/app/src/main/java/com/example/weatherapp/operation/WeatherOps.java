@@ -38,4 +38,6 @@ public interface WeatherOps {
      */
 
     public void onConfigurationChange(MainActivity activity);
+
+    public void showResults();
 }

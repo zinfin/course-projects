@@ -35,10 +35,40 @@ public class WeatherData implements Parcelable {
      * WeatherData's state
      */
     private String mName;
+
+    public double getmSpeed() {
+        return mSpeed;
+    }
+
     private double mSpeed;
     private double mDeg;
     private double mTemp;
     private long mHumidity;
+
+    public String getmName() {
+        return mName;
+    }
+
+    public double getmDeg() {
+        return mDeg;
+    }
+
+    public double getmTemp() {
+        return mTemp;
+    }
+
+    public long getmHumidity() {
+        return mHumidity;
+    }
+
+    public long getmSunrise() {
+        return mSunrise;
+    }
+
+    public long getmSunset() {
+        return mSunset;
+    }
+
     private long mSunrise;
     private long mSunset;
 
@@ -82,6 +112,7 @@ public class WeatherData implements Parcelable {
             + ", sunrise=" + mSunrise 
             + ", sunset=" + mSunset + "]";
     }
+
 
     /*
      * BELOW THIS is related to Parcelable Interface.

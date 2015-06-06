@@ -35,7 +35,7 @@ public class WeatherJSONParser {
             //Log.d(TAG, "Parsing weather results returned as an array");
             JsonWeather weather = parseJsonStreamSingle(reader);
             List<JsonWeather> results = new ArrayList<>();
-            if (weather!=null){
+            if (weather!=null  && weather.getName()!=null){
                 results.add(weather);
             }
             return results;
@@ -187,7 +187,7 @@ public class WeatherJSONParser {
                         break;
                     case Weather.main_JSON:
                         weather.setMain(reader.nextString());
-                        Log.d(TAG, "reading main from wether " + weather.getMain().toString());
+                        Log.d(TAG, "reading main from weather " + weather.getMain().toString());
                         break;
                     default:
                         reader.skipValue();

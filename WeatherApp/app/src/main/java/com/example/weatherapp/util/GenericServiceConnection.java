@@ -8,9 +8,6 @@ import android.util.Log;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-/**
- * Created by sandie on 5/28/15.
- */
 public class GenericServiceConnection<AIDLInterface extends android.os.IInterface> implements ServiceConnection {
 
     /**

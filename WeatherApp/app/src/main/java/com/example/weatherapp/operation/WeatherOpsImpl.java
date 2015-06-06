@@ -3,10 +3,15 @@ package com.example.weatherapp.operation;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.RemoteException;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.weatherapp.R;
 import com.example.weatherapp.activity.MainActivity;
@@ -19,7 +24,11 @@ import com.example.weatherapp.service.WeatherServiceSync;
 import com.example.weatherapp.util.GenericServiceConnection;
 import com.example.weatherapp.util.WeatherUtil;
 
+
 import java.lang.ref.WeakReference;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,15 +46,25 @@ public class WeatherOpsImpl implements WeatherOps {
      * Used to enable garbage collection.
      */
     protected WeakReference<MainActivity> mActivity;
-    /**
-     * The ListView that will display the results to the user.
-     */
-    protected WeakReference<ListView> mListView;
+
 
     /**
      * Acronym entered by the user.
      */
     protected WeakReference<EditText> mEditText;
+
+    protected WeakReference<Button> mAsyncButton;
+    protected WeakReference<Button> mSyncButton;
+    protected WeakReference<TextView> mLocation;
+    protected WeakReference<TextView> mWindSpeed;
+    protected WeakReference<TextView> mWindDir;
+    protected WeakReference<TextView> mTemperature;
+    protected WeakReference<TextView> mHumidity;
+    protected WeakReference<TextView> mSunrise;
+    protected WeakReference<TextView> mSunset;
+    protected WeakReference<LinearLayout> mResultTable;
+    private boolean mResultsReturned = false;
+    private List<WeatherData> mData;
     /**
      * This GenericServiceConnection is used to receive results after
      * binding to the AcronymServiceSync Service using bindService().
@@ -102,6 +121,7 @@ public class WeatherOpsImpl implements WeatherOps {
 
     @Override
     public void doSync(View v) {
+
         final WeatherCall weatherCall= mServiceConnectionSync.getInterface();
         if (weatherCall !=null){
             final String location = mEditText.get().getText().toString();
@@ -120,13 +140,8 @@ public class WeatherOpsImpl implements WeatherOps {
                     return null;
                 }
                 protected void onPostExecute(List<WeatherData> weatherData){
-                    if (weatherData.size()>0){
-                        displayResults(weatherData);
-                    }else{
-                        WeatherUtil.showToast(mActivity.get(),
-                                "no weather data found for "
-                                + mLocation);
-                    }
+                    displayResults(weatherData);
+
                 }
             }.execute(location);
         }else{
@@ -154,13 +169,19 @@ public class WeatherOpsImpl implements WeatherOps {
 
     @Override
     public void onConfigurationChange(MainActivity activity) {
-        mActivity = new WeakReference<MainActivity>(activity);
+        mActivity = new WeakReference<>(activity);
         // Do any re-initializing
         initializeViewFields();
         initializeNonViewFields();
+    }
+    @Override
+    public void showResults(){
+        if (mResultsReturned){
+            mResultTable.get().setVisibility(View.VISIBLE);
+            loadData();
+        }
 
     }
-
     /**
      * Initialize the View fields, which are all stored as
      * WeakReferences to enable garbage collection.
@@ -168,6 +189,48 @@ public class WeatherOpsImpl implements WeatherOps {
     private void initializeViewFields() {
         mActivity.get().setContentView(R.layout.activity_main);
         mEditText = new WeakReference<> ((EditText)mActivity.get().findViewById(R.id.editText));
+        mSyncButton = new WeakReference<>((Button) mActivity.get().findViewById(R.id.button));
+        mAsyncButton =new WeakReference<>((Button) mActivity.get().findViewById(R.id.button2));
+        mResultTable = new WeakReference<>((LinearLayout) mActivity.get().findViewById(R.id.resullTable));
+        mLocation = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.location));
+        mWindSpeed = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.windspeed));
+        mWindDir = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.winddirection));
+        mTemperature = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.temp));
+        mHumidity = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.humidity));
+        mSunrise = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.sunrise));
+        mSunset = new WeakReference<> ((TextView) mActivity.get().findViewById(R.id.sunset));
+        mSyncButton.get().setEnabled(false);
+        mAsyncButton.get().setEnabled(false);
+        mResultTable.get().setVisibility(View.INVISIBLE);
+        mLocation.get().setText("");
+        mWindSpeed.get().setText("");
+        mWindDir.get().setText("");
+        mTemperature.get().setText("");
+        mHumidity.get().setText("");
+        mSunrise.get().setText("");
+        mSunset.get().setText("");
+
+
+        EditText input = (EditText) mActivity.get().findViewById(R.id.editText);
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //no op
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //no op
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Hide results
+                mResultTable.get().setVisibility(View.INVISIBLE);
+                mSyncButton.get().setEnabled(true);
+                mAsyncButton.get().setEnabled(true);
+            }
+        });
     }
 
     /**
@@ -176,14 +239,33 @@ public class WeatherOpsImpl implements WeatherOps {
      */
     private void initializeNonViewFields() {
         mServiceConnectionAsync =
-                new GenericServiceConnection<WeatherRequest>(WeatherRequest.class);
+                new GenericServiceConnection<>(WeatherRequest.class);
         mServiceConnectionSync =
-                new GenericServiceConnection<WeatherCall>(WeatherCall.class);
+                new GenericServiceConnection<>(WeatherCall.class);
     }
-    private void displayResults(List<WeatherData> weatherResults){
-        for (WeatherData w: weatherResults){
-            Log.d(TAG, w.toString());
+
+    private void displayResults(List<WeatherData> weatherResults) {
+        // Show the result table
+        mData = weatherResults;
+        if (mData != null && mData.size()>0){
+            loadData();
+        }else{
+            // Clear results and show text message
+            Toast.makeText(mActivity.get(),"No results returned for location", Toast.LENGTH_LONG).show();
+            mResultsReturned = false;
         }
+    }
+    private void loadData(){
+        WeatherData data = mData.get(0);
+        mResultTable.get().setVisibility(View.VISIBLE);
+        mLocation.get().setText(data.getmName());
+        mWindSpeed.get().setText(""+data.getmSpeed());
+        mWindDir.get().setText(""+data.getmDeg());
+        mTemperature.get().setText(""+data.getmTemp());
+        mHumidity.get().setText(""+data.getmHumidity());
+        mSunrise.get().setText(getStringTime(data.getmSunrise()));
+        mSunset.get().setText(getStringTime(data.getmSunset()));
+        mResultsReturned =true;
 
 
     }
@@ -204,4 +286,13 @@ public class WeatherOpsImpl implements WeatherOps {
             });
         }
     };
+    /**
+     * Get time given milliseconds
+     */
+    private String getStringTime(long timeInSeconds){
+        Date date = new Date(timeInSeconds * 1000L);
+
+        DateFormat formatter = new SimpleDateFormat("HH:mm:ss z");
+        return formatter.format(date);
+    }
 }

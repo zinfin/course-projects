@@ -17,7 +17,7 @@ public class MainActivity extends LoggingActivity {
      * Used to retain the AcronymOps state between runtime configuration
      * changes.
      */
-    protected final RetainedFragmentManager mRetainedFragmentManager =
+    public final RetainedFragmentManager mRetainedFragmentManager =
             new RetainedFragmentManager(this.getFragmentManager(),
                     TAG);
 
@@ -33,6 +33,7 @@ public class MainActivity extends LoggingActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // Handle any configuration change.
         handleConfigurationChanges();
@@ -50,8 +51,14 @@ public class MainActivity extends LoggingActivity {
 
         // Initiate the service binding protocol.
         mWeatherOps.bindService();
-    }
 
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        // Show any results if they exist
+        mWeatherOps.showResults();
+    }
     /**
      * Hook method called by Android when this Activity becomes
      * invisible.
@@ -67,6 +74,7 @@ public class MainActivity extends LoggingActivity {
     }
     public void doSync(View v)
     {
+
         mWeatherOps.doSync(v);
     }
 
